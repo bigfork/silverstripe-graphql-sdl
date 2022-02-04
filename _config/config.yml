@@ -1,0 +1,13 @@
+---
+Name: graphql-sql-transcribe
+After: '#graphqlconfig'
+Only:
+  environment: 'dev'
+---
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\EventDispatcher\Dispatch\Dispatcher:
+    properties:
+      handlers:
+        graphqlSDLTranscribe:
+          on: [ graphqlSchemaBuild ]
+          handler: '%$Bigfork\SilverstripeGraphQLSDL\SDLTranscribeHandler'
