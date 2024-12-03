@@ -55,10 +55,25 @@ class SDLTranscriber
     public function writeSDLToFilesystem(): void
     {
         try {
+            $schemaConfig = $this->schema->getConfig();
+            $coreTypeLoader = $schemaConfig->getTypeLoader();
+
+            // Silverstripe type loader throws exceptions when it encounters unknown types
+            // However, sometimes native types like "Mutation" might be unknown if there
+            // are no mutations registered, so we need to catch those exceptions if the
+            // schema printer tries to load those types
+            $schemaConfig->setTypeLoader(function (string $typeName) use ($coreTypeLoader) {
+                try {
+                    return call_user_func($coreTypeLoader, $typeName);
+                } catch (Exception $e) {
+                    return null;
+                }
+            });
+
             $schema = SchemaPrinter::doPrint($this->schema);
         } catch (Exception $e) {
             throw new Exception(sprintf(
-                'There was an error creating the GraphQL SDL: %s',
+                'There was an error creating the GraphQL SDL file: %s',
                 $e->getMessage()
             ));
         }
